@@ -1,0 +1,15 @@
+pipeline:
+  name: "ds_project_1_eda_pipeline"
+  version: "1.0.0"
+  dataset: "data/raw/dataset.xlsx"
+  output_processed: "data/processed/dataset_final.csv"
+  output_interim: "data/interim/dataset_cleaned.csv"
+
+logging:
+  level: INFO
+  file: "logs/pipeline.log"
+
+reports:
+  eda: "reports/eda_report.html"
+  validation: "reports/validation_report.html"
+  figures_dir: "reports/figures/"

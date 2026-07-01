@@ -1,0 +1,29 @@
+imputation:
+  low_threshold: 0.05       # < 5%  → drop rows
+  high_threshold: 0.20      # > 20% → KNN
+  # Between 5–20%: median (skewed) or group-wise (correlated)
+
+  knn_neighbors: 5
+
+  # Columns to skip imputation (IDs, dates, free-text)
+  skip_columns:
+    - OrderID
+    - Date
+    - CustomerID
+    - ShippingAddress
+    - TrackingNumber
+
+  # Categorical fill value when no better method applies
+  categorical_fill: "Unknown"
+
+outliers:
+  iqr_multiplier: 1.5       # Standard IQR fence
+  numeric_columns:
+    - Quantity
+    - UnitPrice
+    - ItemsInCart
+    - TotalPrice
+
+collinearity:
+  correlation_threshold: 0.80   # Pearson |r| > 0.8 → flag
+  target_column: TotalPrice

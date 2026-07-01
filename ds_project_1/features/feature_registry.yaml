@@ -1,0 +1,115 @@
+feature_registry:
+  version: "1.0.0"
+  project: "ds_project_1"
+  created: "2026-06-28"
+  target_variable: TotalPrice
+
+  raw_features:
+    - name: Quantity
+      type: int
+      description: Number of units ordered
+      source: dataset.xlsx
+
+    - name: UnitPrice
+      type: float
+      description: Price per unit before discounts
+      source: dataset.xlsx
+
+    - name: ItemsInCart
+      type: int
+      description: Total distinct items in the cart at order time
+      source: dataset.xlsx
+
+    - name: TotalPrice
+      type: float
+      description: Final order value after discounts
+      source: dataset.xlsx
+
+    - name: Product
+      type: categorical
+      cardinality: 7
+      encoding: one_hot
+      source: dataset.xlsx
+
+    - name: PaymentMethod
+      type: categorical
+      cardinality: 5
+      encoding: one_hot
+      source: dataset.xlsx
+
+    - name: OrderStatus
+      type: categorical
+      cardinality: 5
+      encoding: label
+      order: [Pending, Shipped, Delivered, Returned, Cancelled]
+      source: dataset.xlsx
+
+    - name: ReferralSource
+      type: categorical
+      cardinality: 5
+      encoding: one_hot
+      source: dataset.xlsx
+
+    - name: CouponCode
+      type: categorical
+      cardinality: 3
+      encoding: one_hot
+      missingness: 25.8%
+      imputation: mode
+      source: dataset.xlsx
+
+  derived_date_features:
+    - name: Year
+      source_col: Date
+      method: dt.year
+
+    - name: Month
+      source_col: Date
+      method: dt.month
+
+    - name: DayOfWeek
+      source_col: Date
+      method: dt.dayofweek
+
+    - name: IsWeekend
+      source_col: Date
+      method: "dayofweek >= 5"
+
+  engineered_features:
+    - name: RevenueIntensityScore
+      formula: "TotalPrice / (Quantity * ItemsInCart)"
+      rationale: Captures revenue density per unit of cart activity
+      type: float
+      non_negative: true
+
+    - name: PriceDeviation
+      formula: "UnitPrice - mean(UnitPrice per Product)"
+      rationale: Signals premium vs discount pricing relative to category
+      type: float
+      method: vectorized groupby transform
+
+    - name: SpendTier
+      formula: "pd.cut(TotalPrice, bins=4, labels=[0,1,2,3])"
+      rationale: Buckets orders into Low/Medium/High/Premium tiers
+      type: ordinal_int
+      bins: 4
+      labels: [0, 1, 2, 3]
+      label_map:
+        0: Low
+        1: Medium
+        2: High
+        3: Premium
+
+  dropped_features:
+    - name: EffectiveUnitPrice
+      reason: Perfectly collinear with UnitPrice (r=1.0)
+    - name: Quarter
+      reason: Highly collinear with Month (r=0.97), Month retained
+    - name: OrderID
+      reason: Identifier — no predictive signal
+    - name: CustomerID
+      reason: Identifier — used as entity key in feature store only
+    - name: ShippingAddress
+      reason: Free text — no structured signal
+    - name: TrackingNumber
+      reason: Identifier — no predictive signal
